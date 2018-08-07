@@ -81,14 +81,12 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        if (!$validator->passes()) {
+        if (!$validator->passes())
             return $this->returnBadRequest();
-        }
 
-        $user = $userModel->register($request->name, $request->email, $request->password);
 
-        if ($user)
-            return $user;
+        if ($user = $userModel->register($request->name, $request->email, $request->password))
+            return $this->returnSuccess($user);
 
     }
 
@@ -100,11 +98,12 @@ class UserController extends Controller
      */
     public function verify($id)
     {
-        $user = User::where('id', $id)->first();
+        if (!$user = User::where('id', $id)->first())
+            return $this->returnBadRequest("User not found");
         $user->status = 1;
 
         if ($user->update())
-            return $user;
+            return $this->returnSuccess($user);
     }
 
 
@@ -115,13 +114,16 @@ class UserController extends Controller
      */
     public function changeType(Request $request)
     {
-        $user = User::where('email', $request->email)->first();
+        if (!$user = User::where('email', $request->email)->first())
+            return $this->returnBadRequest("User not found");
+
         $user->roles()->detach();
         if ($request->type == 1)
             $user->roles()->attach(Role::where('name', 'normal')->first());
         else if ($request->type == 2)
             $user->roles()->attach(Role::where('name', 'admin')->first());
-        return $user;
+
+        return $this->returnSuccess($user);;
     }
 
 
@@ -150,9 +152,9 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
-        if (!$validator->passes()) {
+        if (!$validator->passes())
             return $this->returnBadRequest();
-        }
+
 
         $user = User::where('id', $id)->first();
         $user->name = $request->name;
@@ -168,6 +170,36 @@ class UserController extends Controller
 
 
         if ($user->update()) ;
-        return $user;
+        return $this->returnSuccess($user);
+    }
+
+
+    public function edit($id, Request $request)
+    {
+        $rules = [
+            'name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+        ];
+
+        $messages = [
+            'name.required' => 'Name empty',
+            'email.required' => 'Email empty',
+            'email.email' => 'Email invalid',
+            'password.required' => 'Password empty',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if (!$validator->passes())
+            return $this->returnBadRequest();
+
+        $user = User::where('id', $id)->first();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+
+        if ($user->update())
+            return $this->returnSuccess($user);
     }
 }

@@ -32,9 +32,9 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
     $router->patch('/edit/{id}', ['uses' => 'UserController@edit']);
 
 
+    // TO DO - protect to admin and move to auth routes
     $router->patch('/changeType', ['uses' => 'UserController@changeType']);
     $router->patch('/verify/{id}', ['uses' => 'UserController@verify']);
-
     $router->patch('/update/{id}', ['uses' => 'UserController@update']);
 
 });
