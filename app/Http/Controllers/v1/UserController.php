@@ -114,6 +114,15 @@ class UserController extends Controller
      */
     public function changeType(Request $request)
     {
+        $rules = [
+            'type' => 'required|integer|between:1,2'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if (!$validator->passes())
+            return $this->returnBadRequest();
+
         if (!$user = User::where('email', $request->email)->first())
             return $this->returnBadRequest("User not found");
 
@@ -173,7 +182,11 @@ class UserController extends Controller
         return $this->returnSuccess($user);
     }
 
-
+    /**edit user  [user]
+     * @param $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function edit($id, Request $request)
     {
         $rules = [
