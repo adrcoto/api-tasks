@@ -14,6 +14,7 @@ use App\Role;
 use App\User;
 use GenTux\Jwt\JwtToken;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -63,7 +64,7 @@ class UserController extends Controller
         return $this->returnSuccess($data);
     }
 
-    public function register(Request $request, User $userModel, JwtToken $jwtToken)
+    public function register(Request $request, User $userModel)
     {
         $rules = [
             'name' => 'required',
@@ -86,21 +87,32 @@ class UserController extends Controller
 
         $user = $userModel->register($request->name, $request->email, $request->password);
 
-        if (!$user) {
-            return $this->returnNotFound('error');
-        }
+        if ($user)
+            return $user;
 
-        $token = $jwtToken->createToken($user);
-
-        $data = [
-            'user' => $user,
-            'jwt' => $token->token()
-        ];
-
-        return $this->returnSuccess($data);
     }
 
 
+    /**
+     * account verification [admin]
+     * @param $id
+     * @return mixed
+     */
+    public function verify($id)
+    {
+        $user = User::where('id', $id)->first();
+        $user->status = 1;
+
+        if ($user->update())
+            return $user;
+    }
+
+
+    /**
+     * change account type [admin]
+     * @param Request $request
+     * @return mixed
+     */
     public function changeType(Request $request)
     {
         $user = User::where('email', $request->email)->first();
@@ -113,11 +125,49 @@ class UserController extends Controller
     }
 
 
-    public function verify($id){
-        $user = User::where('id', $id)->first();
-        $user->status = 1;
-        $user->update();
+    /**
+     * update [admin]
+     * @param $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update($id, Request $request)
+    {
+        $rules = [
+            'name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+            'status' => 'required|integer|between:0,1',
+            'type' => 'required|integer|between:1,2'
+        ];
 
+        $messages = [
+            'name.required' => 'Name empty',
+            'email.required' => 'Email empty',
+            'email.email' => 'Email invalid',
+            'password.required' => 'Password empty',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if (!$validator->passes()) {
+            return $this->returnBadRequest();
+        }
+
+        $user = User::where('id', $id)->first();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+
+        $user->status = $request->status;
+        $user->roles()->detach();
+        if ($request->type == 1)
+            $user->roles()->attach(Role::where('name', 'normal')->first());
+        else if ($request->type == 2)
+            $user->roles()->attach(Role::where('name', 'admin')->first());
+
+
+        if ($user->update()) ;
         return $user;
     }
 }

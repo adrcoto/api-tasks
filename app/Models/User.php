@@ -75,6 +75,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return false;
     }
 
+
     public function authorizeRoles($roles)
     {
         if (is_array($roles)) {

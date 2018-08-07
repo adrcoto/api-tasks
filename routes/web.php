@@ -29,10 +29,14 @@ $router->options(
 $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware' => 'cors'], function () use ($router) {
     $router->post('/login', ['uses' => 'UserController@login']);
     $router->post('/register', ['uses' => 'UserController@register']);
+    $router->patch('/edit/{id}', ['uses' => 'UserController@edit']);
 
 
     $router->patch('/changeType', ['uses' => 'UserController@changeType']);
     $router->patch('/verify/{id}', ['uses' => 'UserController@verify']);
+
+    $router->patch('/update/{id}', ['uses' => 'UserController@update']);
+
 });
 
 /** Routes with auth */
