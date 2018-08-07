@@ -10,6 +10,7 @@ namespace App\Http\Controllers\v1;
 
 
 use App\Http\Controllers\Controller;
+use App\Role;
 use App\User;
 use GenTux\Jwt\JwtToken;
 use Illuminate\Http\Request;
@@ -68,8 +69,6 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            'status' => 'required',
-            'role' => 'required'
         ];
 
         $messages = [
@@ -77,8 +76,6 @@ class UserController extends Controller
             'email.required' => 'Email empty',
             'email.email' => 'Email invalid',
             'password.required' => 'Password empty',
-            'status.required' => 'Status empty',
-            'role.role' => 'Role empty'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -87,7 +84,7 @@ class UserController extends Controller
             return $this->returnBadRequest();
         }
 
-        $user = $userModel->register($request->name, $request->email, $request->password, $request->status, $request->role);
+        $user = $userModel->register($request->name, $request->email, $request->password);
 
         if (!$user) {
             return $this->returnNotFound('error');
@@ -103,4 +100,24 @@ class UserController extends Controller
         return $this->returnSuccess($data);
     }
 
+
+    public function changeType(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+        $user->roles()->detach();
+        if ($request->type == 1)
+            $user->roles()->attach(Role::where('name', 'normal')->first());
+        else if ($request->type == 2)
+            $user->roles()->attach(Role::where('name', 'admin')->first());
+        return $user;
+    }
+
+
+    public function verify($id){
+        $user = User::where('id', $id)->first();
+        $user->status = 1;
+        $user->update();
+
+        return $user;
+    }
 }

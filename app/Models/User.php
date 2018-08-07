@@ -7,6 +7,7 @@ use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Lumen\Auth\Authorizable;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract, JwtPayloadInterface
@@ -19,7 +20,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'role_id', 'status'
+        'name', 'email', 'status'
     ];
 
     /**
@@ -42,10 +43,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         ];
     }
 
-    public function role()
-    {
-        return $this->belongsTo('App/Role');
-    }
+//    public function role()
+//    {
+//        return $this->belongsTo('App/Role');
+//    }
 
     /**
      * Login user
@@ -74,19 +75,57 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return false;
     }
 
-    public function register($name, $email, $passowrd, $status, $role)
+    public function authorizeRoles($roles)
+    {
+        if (is_array($roles)) {
+            return $this->hasAnyRole($roles) ||
+                abort(401, 'This action is unauthorized.');
+        }
+        return $this->hasRole($roles) ||
+            abort(401, 'This action is unauthorized.');
+    }
+
+    /**
+     * Check multiple roles
+     * @param array $roles
+     * @return bool
+     */
+    public function hasAnyRole($roles)
+    {
+        return null !== $this->roles()->whereIn('name', $roles)->first();
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Check one role
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole($role)
+    {
+        return null !== $this->roles()->where('name', $role)->first();
+    }
+
+
+    public function register($name, $email, $password)
     {
         $user = new User();
         $user->name = $name;
         $user->email = $email;
-        $user->password = $passowrd;
-        $user->status = $status;
-        $user->role_id = $role;
+        $user->password = Hash::make($password);
+        $user->status = 0;
 
-        $result = $user->save();
-        if ($result)
+        if ($user->save()) {
+            $user->roles()->attach(Role::where('name', 'normal')->first());
             return $user;
+        }
 
         return false;
     }
+
+
 }
