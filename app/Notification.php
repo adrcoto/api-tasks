@@ -4,7 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Task extends Model
+/**
+ * Class Notification
+ *
+ * @package App
+ */
+class Notification extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,11 +17,8 @@ class Task extends Model
      * @var array
      */
     protected $fillable = [
-        'name',
-        'description',
-        'status',
         'user_id',
-        'assign'
+        'message'
     ];
 
     /**
@@ -28,18 +30,12 @@ class Task extends Model
     ];
 
     /**
-     * Get the user that owns the task.
+     * Get the user to be notified.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user()
     {
         return $this->belongsTo('App\User');
-    }
-
-    /**
-     * Get the user that owns the task.
-     */
-    public function assignTo()
-    {
-        return $this->belongsTo('App\User', 'assign', 'id');
     }
 }

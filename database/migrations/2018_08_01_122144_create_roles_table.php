@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+/**
+ * Class CreateRolesTable
+ */
 class CreateRolesTable extends Migration
 {
     /**
@@ -15,9 +18,8 @@ class CreateRolesTable extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('description');
             $table->timestamps();
+            $table->string('name');
         });
     }
 
