@@ -264,7 +264,8 @@ class UserController extends Controller
     public function updateTask($id, Request $request)
     {
         try {
-            $task = Task::find($id);
+            if (!$task = Task::find($id))
+                return $this->returnNotFound("Task not found");
 
             if ($task->user_id != $this->validateSession()->id)
                 return $this->returnError('This task do not belongs to you');

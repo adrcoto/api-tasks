@@ -82,7 +82,8 @@ class AdminController extends Controller
     public function updateUser(Request $request, $id)
     {
         try {
-            $user = User::find($id);
+            if (!$user = User::find($id))
+                return $this->returnNotFound("User not found");
 
             if ($request->has('name')) {
                 $user->name = $request->name;
@@ -128,7 +129,8 @@ class AdminController extends Controller
     public function deleteUser($id)
     {
         try {
-            $user = User::find($id);
+            if (!$user = User::find($id))
+                return $this->returnNotFound("User not found");
 
             $user->delete();
 
@@ -184,7 +186,8 @@ class AdminController extends Controller
     public function updateTask($id, Request $request)
     {
         try {
-            $task = Task::find($id);
+            if (!$task = Task::find($id))
+                return $this->returnNotFound("Task not found");
 
             if ($request->has('name'))
                 $task->name = $request->name;
@@ -209,7 +212,8 @@ class AdminController extends Controller
     public function deleteTask($id)
     {
         try {
-            $task = Task::find($id);
+            if (!$task = Task::find($id))
+                return $this->returnNotFound("Task not found");
 
             $task->delete();
 
