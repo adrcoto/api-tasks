@@ -4,10 +4,10 @@ namespace App;
 
 use GenTux\Jwt\JwtPayloadInterface;
 use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Database\Eloquent\Model;
 use Laravel\Lumen\Auth\Authorizable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 
 /**
  * Class User
@@ -47,6 +47,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     ];
 
     protected $visible = [
+    	'id',
         'name',
         'email',
         'role_id'

@@ -49,21 +49,10 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
         });
     });
 
-
-    //tasks
-    $router->group(['prefix' => 'task'], function () use ($router) {
-        $router->get('/', ['uses' => 'UserController@getTasks']);
-        $router->post('/', ['uses' => 'UserController@createTask']);
-        $router->patch('/{id}', ['uses' => 'UserController@updateTask']);
+    $router->get('/tasks', ['uses' => 'TaskController@getAll']);
+    $router->group(['prefix' => 'user'], function () use ($router) {
+        $router->post('/', ['uses' => 'TaskController@create']);
+        $router->patch('/{id}', ['uses' => 'TaskController@update']);
+        $router->delete('/{id}', ['uses' => 'TaskController@delete']);
     });
-
-    $router->group(['prefix' => 'admin', 'middleware' => 'admin'], function () use ($router) {
-        $router->get('/tasks', ['uses' => 'AdminController@getTasks']);
-        $router->group(['prefix' => 'task'], function () use ($router) {
-            $router->post('/', ['uses' => 'AdminController@createTask']);
-            $router->patch('/{id}', ['uses' => 'AdminController@updateTask']);
-            $router->delete('/{id}', ['uses' => 'AdminController@deleteTask']);
-        });
-    });
-
 });

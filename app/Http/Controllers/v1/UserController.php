@@ -4,7 +4,7 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use App\Role;
-use App\Task;
+use App\Services\EmailService;
 use App\User;
 use GenTux\Jwt\JwtToken;
 use Illuminate\Http\Request;
@@ -55,7 +55,7 @@ class UserController extends Controller
 
             $data = [
                 'user' => $user,
-                'token' => $token->token()
+                'jwt' => $token->token()
             ];
 
             return $this->returnSuccess($data);
@@ -129,6 +129,9 @@ class UserController extends Controller
             $user->save();
 
             //TODO should sent an email to user with code
+            $emailService = new EmailService();
+
+            $emailService->sendForgotPassword($user);
 
             return $this->returnSuccess();
         } catch (\Exception $e) {
@@ -177,6 +180,22 @@ class UserController extends Controller
     }
 
     /**
+     * Get logged user
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function get()
+    {
+        try {
+            $user = $this->validateSession();
+
+            return $this->returnSuccess($user);
+        } catch (\Exception $e) {
+            return $this->returnError($e->getMessage());
+        }
+    }
+
+    /**
      * Update logged user
      *
      * @param Request $request
@@ -203,91 +222,4 @@ class UserController extends Controller
             return $this->returnError($e->getMessage());
         }
     }
-
-    public function getTasks()
-    {
-        try {
-            $tasks = Task::where('user_id', $this->validateSession()->id)->orWhere('assign', $this->validateSession()->id)->get();
-            return $this->returnSuccess($tasks);
-        } catch (\Exception $e) {
-            return $this->returnError($e->getMessage());
-        }
-    }
-
-    public function createTask(Request $request)
-    {
-        try {
-            $rules = [
-                'name' => 'required',
-                'description' => 'required',
-                'status' => 'required|integer',
-                'assign' => 'required:users'
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if (!$validator->passes()) {
-                return $this->returnBadRequest('Please fill all required fields');
-            }
-
-            $task = new Task();
-            $task->name = $request->name;
-            $task->description = $request->description;
-            $task->status = $request->status;
-            $task->user_id = $this->validateSession()->id;
-            $task->assign = $request->assign;
-
-            $task->save();
-
-            return $this->returnSuccess();
-        } catch (\Exception $e) {
-            return $this->returnError($e->getMessage());
-        }
-    }
-
-    /**
-     * Get logged user
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function get()
-    {
-        try {
-            $user = $this->validateSession();
-
-            return $this->returnSuccess($user);
-        } catch (\Exception $e) {
-            return $this->returnError($e->getMessage());
-        }
-    }
-
-    public function updateTask($id, Request $request)
-    {
-        try {
-            if (!$task = Task::find($id))
-                return $this->returnNotFound("Task not found");
-
-            if ($task->user_id != $this->validateSession()->id)
-                return $this->returnError('This task do not belongs to you');
-
-            if ($request->has('name'))
-                $task->name = $request->name;
-
-            if ($request->has('description'))
-                $task->description = $request->description;
-
-            if ($request->has('status'))
-                $task->status = $request->status;
-
-            if ($request->has('assign'))
-                $task->assign = $request->assign;
-
-            $task->update();
-
-            return $this->returnSuccess($task);
-        } catch (\Exception $e) {
-            return $this->returnError($e->getMessage());
-        }
-    }
-
 }

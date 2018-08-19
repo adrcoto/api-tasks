@@ -91,6 +91,9 @@ $app->routeMiddleware([
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(GenTux\Jwt\Support\LumenServiceProvider::class);
 
+$app->register(\Illuminate\Mail\MailServiceProvider::class);
+$app->configure('mail');
+
 /*
 |--------------------------------------------------------------------------
 | Load The Application Routes
