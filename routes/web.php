@@ -55,4 +55,15 @@ $router->group(['namespace' => API_VERSION, 'prefix' => API_VERSION, 'middleware
         $router->patch('/{id}', ['uses' => 'TaskController@update']);
         $router->delete('/{id}', ['uses' => 'TaskController@delete']);
     });
+
+    //groups rutes
+    $router->group(['prefix' => '/groups'], function () use ($router) {
+        $router->get('/', ['uses' => 'GroupController@getAll']);
+        $router->post('/', ['uses' => 'GroupController@create']);
+        $router->post('/{id}', ['uses' => 'GroupController@addParticipants']);
+        $router->patch('/{id}', ['uses' => 'GroupController@update']);
+        $router->delete('/{id}', ['uses' => 'GroupController@delete']);
+    });
+
+
 });
